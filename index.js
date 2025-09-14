@@ -2,8 +2,6 @@ const ROCK = 'rock';
 const PAPER = 'paper';
 const SCISSORS = 'scissors';
 
-playGame();
-
 function getComputerChoice()
 {
     let result = ROCK;
@@ -21,28 +19,6 @@ function getComputerChoice()
     return result
 }
 
-function getHumanChoice()
-{
-    return prompt(`Enter ${ROCK}, ${PAPER}, or ${SCISSORS}`);
-}
-
-function humanWin(humanChoice, computerChoice)
-{
-    console.log(`You win. ${humanChoice} beats ${computerChoice}`);
-    return 1;
-}
-
-function computerWin(humanChoice, computerChoice)
-{
-    console.log(`You lose. ${computerChoice} beats ${humanChoice}`);
-    return -1;
-}
-
-function humanComputerTie(humanChoice, computerChoice)
-{
-    console.log(`It was a tie. ${humanChoice} and ${computerChoice}`);
-}
-
 function playRound(humanChoice, computerChoice)
 {
     let scoreDelta = 0;
@@ -51,57 +27,81 @@ function playRound(humanChoice, computerChoice)
         || humanChoice === PAPER && computerChoice === ROCK
         || humanChoice === SCISSORS && computerChoice === PAPER)
     {
-        scoreDelta = humanWin(humanChoice, computerChoice);
+        scoreDelta = 1;
     }
     else if(computerChoice === PAPER && humanChoice === ROCK 
         || computerChoice === SCISSORS && humanChoice === PAPER
         || computerChoice === ROCK && humanChoice === SCISSORS)
     {
-        scoreDelta = computerWin(humanChoice, computerChoice);
-    }
-    else
-    {
-        humanComputerTie(humanChoice, computerChoice);
+        scoreDelta = -1;
     }
 
     return scoreDelta;
 }
 
-function playGame()
-{
-    let humanScore = 0;
-    let computerScore = 0;
+let humanScore = 0;
+let computerScore = 0;
 
-    for(let round = 0; round < 5; round++)
+function handlePlayerChoice(humanChoice) {
+    let computerChoice = getComputerChoice();
+    let playerDelta = playRound(humanChoice, computerChoice);
+
+    if(playerDelta > 0)
     {
-        let humanChoice = getHumanChoice().toLowerCase();
-        let computerChoice = getComputerChoice();
-
-        let playerDeltaScore = playRound(humanChoice, computerChoice);
-
-        if(playerDeltaScore > 0)
-        {
-            humanScore +=  playerDeltaScore;
-        }
-        else
-        {
-            computerScore -= playerDeltaScore;
-        }
+        humanScore += playerDelta;
+        updateDisplay("You Win", `${humanChoice} beats ${computerChoice}. Human: ${humanScore} Computer: ${computerScore}`);
     }
-
-    if(humanScore > computerScore)
+    else if(playerDelta < 0)
     {
-        console.log('You Win!');
-    }
-    else if(computerScore > humanScore)
-    {
-        console.log('You lose!');
+        computerScore -= playerDelta;
+        updateDisplay("You Lose", `${computerChoice} beats ${humanChoice}. Human: ${humanScore} Computer: ${computerScore}`);
     }
     else
     {
-        console.log('It was a tie!');
+        updateDisplay("It was a tie", `${computerChoice} and ${humanChoice}. Human: ${humanScore} Computer: ${computerScore}`);
+    } 
+    
+    if(humanScore === 5 || computerScore === 5)
+    {
+        let finalResult;
+        if(humanScore > computerScore)
+        {
+            finalResult = 'You Win!';
+        }
+        else if(computerScore > humanScore)
+        {
+            finalResult = 'You lose!';
+        }
+        else
+        {
+            finalResult = 'It was a tie!';
+        }
+        
+        updateDisplay(finalResult, `Final Score: Human: ${humanScore} Computer: ${computerScore}`);
     }
-
-    console.log(`Final Score: Human: ${humanScore} Computer: ${computerScore}`)
 }
 
+function updateDisplay(resultText, scoreText) {
+    const result = document.querySelector(".gameStats .result");
+    const score = document.querySelector(".gameStats .score");
+    result.textContent = resultText;
+    score.textContent = scoreText;
+}
+
+function setupEventListeners() {
+    const choiceButton = document.querySelectorAll('.playerSelection');
+    
+    for(let button of Array.from(choiceButton))
+    {
+        button.addEventListener('click', () => {
+            let humanChoice = button.textContent.toLocaleLowerCase();
+            handlePlayerChoice(humanChoice);
+        });
+    }
+}
+
+function playGame() {
+    setupEventListeners();
+}
+
+playGame();
